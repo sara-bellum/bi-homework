@@ -1,5 +1,6 @@
 # Decision Support for Loans in a Bank Branch
 
+
 ## Project requirements
 
 1. **Analyse the loan portfolio:** highlight the share of each loan type, such as consumer, auto and personal-needs loans, in the total loans granted to individuals.
