@@ -1,0 +1,45 @@
+using Decision_support_loans_bank;
+void Check(bool ok,string name) { if(!ok) throw new Exception(name); Console.WriteLine("PASS: "+name); }
+void Close(double actual,double expected,string name) => Check(Math.Abs(actual-expected)<0.00001,name);
+Close(Analytics.Predict(new double[]{10,20,30},1),40,"OLS linear trend");
+Close(Analytics.Predict(new double[]{30,20,10},3),0,"negative forecast floored");
+Close(Analytics.Predict(new double[]{7},1),7,"single month helper");
+Close(Analytics.DemandMultiplier(10,-1,-1),10.0/9,"rate cut increases assumed demand");
+Close(Analytics.DemandMultiplier(10,1,0),1,"zero elasticity unchanged demand");
+try { Analytics.DemandMultiplier(5,-5,-1); throw new Exception("invalid rate accepted"); } catch(ArgumentException) { Console.WriteLine("PASS: invalid rate rejected"); }
+var paid=new Loan { Closed=true, Funded=1000, Interest=80, Term=12, Installment=100, Issued=new DateTime(2018,1,1),LastPayment=new DateTime(2018,8,1) };
+Check(paid.Early,"early repayment classification"); Close(paid.LostInterest,120,"unearned interest excludes principal");
+Check(!(paid with { LastPayment=new DateTime(2018,11,1) }).Early,"two months early excluded");
+Check(!(paid with { LastPayment=new DateTime(2017,11,1) }).Early,"invalid negative duration excluded");
+Close(paid.Net(12,1),0,"funding and operating cost math");
+var eligible=new Loan { Grade="A", Delinquencies=0, Dti=20, Income=120000,Cards=4 };
+Check(Analytics.Product(eligible)=="Premium credit card","cross-selling premium rule");
+Check(Analytics.Product(eligible with { Dti=null })==null,"missing eligibility data excluded");
+var months=Analytics.Monthly(new[]{paid},new DateTime(2018,1,1),new DateTime(2018,3,1));
+Check(months.Count==3 && months[1].Count==0,"missing months zero filled");
+var all=Loan.Load(); Check(all.Count==90427,"supplied database loads every loan");
+var personal=all.Where(x=>x.Purpose!="small_business").ToList();
+Close(personal.GroupBy(x=>x.Category).Sum(g=>g.Sum(x=>x.Amount))/personal.Sum(x=>x.Amount),1,"portfolio shares reconcile");
+Check(all.Count(x=>x.Early)==31914,"early payoff reconciles with source view");
+Check(all.All(x=>double.IsFinite(x.Net(3,1))),"net margins finite across complete source");
+Console.WriteLine($"DATA: personal={personal.Count}; flagged={personal.Count(x=>x.Bad)}; early={personal.Count(x=>x.Early)}; amount={personal.Sum(x=>x.Amount):F2}; net={personal.Where(x=>x.Closed).Sum(x=>x.Net(3,1)):F2}");
+
+Check(all.All(x=>!string.IsNullOrWhiteSpace(x.Category)) && all.First(x=>x.Purpose=="car").Category=="Auto","English purpose mapping in real loan data");
+Check(Presentation.Category("debt_consolidation")=="Debt consolidation","English category label");
+Check(Presentation.Status("Does not meet the credit policy. Status:Charged Off")=="Charged off (outside policy)","English outside-policy status");
+Check(Presentation.Home("MORTGAGE")=="Mortgaged home","English housing label");
+Check(Presentation.Reason(eligible).Contains("100k"),"product recommendation has explanation");
+Check(Presentation.Priority(new Loan { Closed=false, Severity=3 })=="Urgent arrears review","arrears action label");
+Close(Presentation.Shortfall(new Loan { Closed=true,Bad=true,Funded=1000,Principal=300,Recoveries=100 }),600,"recovery shortfall");
+var table=new System.Data.DataTable(); table.Columns.Add("Value",typeof(int));
+foreach(int i in Enumerable.Range(1,123)) table.Rows.Add(i);
+var pager=new ResultPager(); pager.Set(table);
+Check(pager.Count==123 && pager.PageCount==3 && pager.Current().Rows.Count==50,"result paging limits rendered rows");
+pager.Move(1); Check((int)pager.Current().Rows[0][0]==51,"second result page");
+pager.Move(100); Check(pager.PageIndex==2 && pager.Current().Rows.Count==23,"last page clamped");
+pager.Sort("Value",true); Check(pager.PageIndex==0 && (int)pager.Current().Rows[0][0]==123,"sorting applies to all result rows");
+pager.Move(1); Check((int)pager.Current().Rows[0][0]==73,"sorted second page");
+pager.Set(table.Clone()); Check(pager.Count==0 && pager.PageCount==1 && pager.Current().Rows.Count==0,"empty result paging");
+var forecast=Analytics.Forecast(months,2);
+Check(forecast.Count==5 && forecast[2].Kind=="Observed" && forecast[3].Kind=="Forecast" && forecast[3].Month=="2018-04","forecast boundary follows final observed month");
+Check(Analytics.Forecast(new List<MonthPoint>{months[0]},6).All(x=>x.Kind=="Observed"),"no future forecast for insufficient history");
