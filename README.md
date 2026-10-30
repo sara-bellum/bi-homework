@@ -10,6 +10,11 @@
 5. **Evaluate profitability and cross-selling potential:** calculate estimated net margins across loan categories and identify low-risk customer profiles for complementary products, such as premium credit cards or life insurance. The intended analysis includes purchasing patterns where suitable data is available.
 6. **Assess early repayment:** analyse customers who fully repay before maturity, estimate the interest forgone and suggest retention opportunities or alternative financial products for potentially liquid customers.
 
+# Our Team
+- CHELARU I LAVINIA-BIANCA
+- CORNICIUC V SILVIU-LUCIAN
+- IOVU CI IASMINA-IULIANA
+
 ## The big picture
 
 The application helps a bank branch review its lending activity and compare possible decisions. It brings portfolio composition, repayment problems, forecasts, profitability and customer opportunities into one desktop interface. It supports analysis; it does not approve loans or automatically contact customers.
