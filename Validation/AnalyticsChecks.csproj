@@ -1,10 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
 <ItemGroup>
+<PackageReference Include="DocumentFormat.OpenXml" Version="3.3.0" />
 <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.11" />
 <Compile Include="../Decision_support_loans_bank/Loan.cs" Link="Loan.cs" />
 <Compile Include="../Decision_support_loans_bank/Analytics.cs" Link="Analytics.cs" />
 <Compile Include="../Decision_support_loans_bank/Db.cs" Link="Db.cs" />
 <Compile Include="../Decision_support_loans_bank/Presentation.cs" Link="Presentation.cs" />
 <None Include="../Decision_support_loans_bank/credite_banca.db" Link="credite_banca.db" CopyToOutputDirectory="PreserveNewest" />
+<Compile Include="../Decision_support_loans_bank/LoanRepository.cs" Link="LoanRepository.cs" />
+<Compile Include="../Decision_support_loans_bank/GeographyService.cs" Link="GeographyService.cs" />
+<Compile Include="../Decision_support_loans_bank/MapHtmlExporter.cs" Link="MapHtmlExporter.cs" />
+<Compile Include="../Decision_support_loans_bank/ExcelExporter.cs" Link="ExcelExporter.cs" />
+<EmbeddedResource Include="../Decision_support_loans_bank/Resources/us-states.geojson" LogicalName="BankLoanAnalysis.us-states.geojson" />
 </ItemGroup></Project>
