@@ -41,16 +41,10 @@ public sealed record Loan
     public double Net(double funding, double operating) => Interest+Fees+Recoveries-CollectionCost
         -(Bad ? Math.Max(0,Funded-Principal) : 0)-Funded*funding/100*ExposureYears-Funded*operating/100;
 
-    public static List<Loan> Load()
+    public static List<Loan> Load() => LoanRepository.Load(new LoanFilter());
+
+    public static List<Loan> FromTable(DataTable table)
     {
-        var table = Db.Query("""
-            SELECT c.*, cl.stat, cl.venit_anual, cl.tip_locuinta, cl.grad_indatorare,
-                   cl.intarzieri_2ani, cl.nr_carduri, cl.nr_ipoteci,
-                   t.denumire AS categorie, t.cod AS scop, s.cod AS status_cod,
-                   s.rau_platnic, s.inchis, s.gravitate
-            FROM Credite c JOIN Clienti cl USING(id_client)
-            JOIN TipuriCredit t USING(id_tip) JOIN StariCredit s USING(id_stare)
-            """);
         return table.AsEnumerable().Select(r => new Loan {
             Id=(long)r["id_credit"], Customer=S(r,"id_client"), Category=Presentation.Category(S(r,"scop")),
             Purpose=S(r,"scop"), Status=S(r,"status_cod"), Grade=S(r,"grad_risc"),
